@@ -6,7 +6,7 @@ require 'rubygems/package'
 
 class PackagesLoader
   def self.load(page:, per_page:)
-    Rails.cache.fetch("packages-page-#{page}", expires_in: 1.hour) do
+    Rails.cache.fetch("packages-page-#{page}", expires_in: 1.day) do
       packages_data = extract_packages_data(page, per_page)
       packages = insert_packages(packages_data)
       Package.where(id: packages&.pluck('id'))&.order(:name)&.map(&:attributes)
