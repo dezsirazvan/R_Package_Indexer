@@ -5,28 +5,11 @@ require 'stringio'
 require 'rubygems/package'
 
 class PackagesLoader
-  def self.load
-    Rails.cache.fetch('packages', expires_in: 1.day) do
-      delete_all_packages
-      packages_data = extract_packages_data
-      insert_packages(packages_data)
-      Package.all.order(:name)
-    end
-  end
-
-  private
-
-  def self.delete_all_packages
-    Package.delete_all
-  end
-
-  def self.extract_packages_data
-    packages_list = download_packages_list
-    packages_list.first(5000).scan(/Package:\s+(.+?)\nVersion:\s+(.+?)\n/).map do |match|
-      {
-        name: match[0],
-        version: match[1]
-      }.merge(extract_package_details(match[0], match[1]))
+  def self.load(page:, per_page:)
+    Rails.cache.fetch("packages-page-#{page}", expires_in: 1.hour) do
+      packages_data = extract_packages_data(page, per_page)
+      packages = insert_packages(packages_data)
+      Package.where(id: packages.pluck('id')).order(:name).map(&:attributes)
     end
   end
 
@@ -36,6 +19,19 @@ class PackagesLoader
     request = Net::HTTP::Get.new(url)
     response = http.request(request)
     Zlib::GzipReader.new(StringIO.new(response.body)).read
+  end
+
+  private
+
+  def self.extract_packages_data(page, per_page)
+    packages_list = download_packages_list
+
+    packages_list[((page - 1) * per_page)...(page * per_page)].scan(/Package:\s+(.+?)\nVersion:\s+(.+?)\n/).map do |match|
+      {
+        name: match[0],
+        version: match[1]
+      }.merge(extract_package_details(match[0], match[1]))
+    end
   end
 
   def self.extract_package_details(name, version)
