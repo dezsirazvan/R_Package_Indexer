@@ -9,7 +9,7 @@ class PackagesLoader
     Rails.cache.fetch("packages-page-#{page}", expires_in: 1.hour) do
       packages_data = extract_packages_data(page, per_page)
       packages = insert_packages(packages_data)
-      Package.where(id: packages.pluck('id')).order(:name).map(&:attributes)
+      Package.where(id: packages&.pluck('id'))&.order(:name)&.map(&:attributes)
     end
   end
 
@@ -18,6 +18,7 @@ class PackagesLoader
     http = Net::HTTP.new(url.host, url.port)
     request = Net::HTTP::Get.new(url)
     response = http.request(request)
+
     Zlib::GzipReader.new(StringIO.new(response.body)).read
   end
 
