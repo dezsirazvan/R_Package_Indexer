@@ -1,0 +1,32 @@
+<h1>All Packages</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Version</th>
+      <th>R Version needed</th>
+      <th>Dependencies</th>
+      <th>Date/Publication</th>
+      <th>Title</th>
+      <th>Authors</th>
+      <th>Maintainers</th>
+      <th>License</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @packages.each do |package| %>
+      <tr>
+        <td><%= package.name %></td>
+        <td><%= package.version %></td>
+        <td><%= package.r_version_needed %></td>
+        <td><%= package.dependencies %></td>
+        <td><%= package.date_publication %></td>
+        <td><%= package.title %></td>
+        <td><%= package.authors %></td>
+        <td><%= package.maintainers %></td>
+        <td><%= package.license %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
